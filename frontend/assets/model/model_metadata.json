@@ -1,0 +1,111 @@
+{
+  "version": "1.0.1",
+  "model_type": "xgboost_binary_classification",
+  "feature_columns": [
+    "Age",
+    "Gender",
+    "BMI",
+    "Smoking",
+    "Alcohol",
+    "FamilyHistory",
+    "SystolicBP",
+    "DiastolicBP",
+    "HeartRate",
+    "OxygenSaturation",
+    "PulsePressure",
+    "MAP"
+  ],
+  "feature_stats": {
+    "Age": {
+      "mean": 51.95375,
+      "std": 13.525171857677993,
+      "median": 52.0,
+      "min": 20.0,
+      "max": 89.0
+    },
+    "Gender": {
+      "mean": 0.505,
+      "std": 0.500287777009172,
+      "median": 1.0,
+      "min": 0.0,
+      "max": 1.0
+    },
+    "BMI": {
+      "mean": 26.935125,
+      "std": 4.572342028316012,
+      "median": 27.1,
+      "min": 17.5,
+      "max": 41.8
+    },
+    "Smoking": {
+      "mean": 0.215,
+      "std": 0.4110793509664412,
+      "median": 0.0,
+      "min": 0.0,
+      "max": 1.0
+    },
+    "Alcohol": {
+      "mean": 1.2625,
+      "std": 0.6607870681519094,
+      "median": 1.0,
+      "min": 0.0,
+      "max": 2.0
+    },
+    "FamilyHistory": {
+      "mean": 0.26125,
+      "std": 0.43959070450175963,
+      "median": 0.0,
+      "min": 0.0,
+      "max": 1.0
+    },
+    "SystolicBP": {
+      "mean": 139.43,
+      "std": 15.895783872812432,
+      "median": 139.0,
+      "min": 95.0,
+      "max": 184.0
+    },
+    "DiastolicBP": {
+      "mean": 81.04625,
+      "std": 9.371707264891683,
+      "median": 81.0,
+      "min": 58.0,
+      "max": 113.0
+    },
+    "HeartRate": {
+      "mean": 74.97,
+      "std": 8.294431686152171,
+      "median": 75.0,
+      "min": 48.0,
+      "max": 97.0
+    },
+    "OxygenSaturation": {
+      "mean": 97.87,
+      "std": 0.8453953907541654,
+      "median": 97.9,
+      "min": 95.3,
+      "max": 100.0
+    },
+    "PulsePressure": {
+      "mean": 58.38375,
+      "std": 13.654103013339016,
+      "median": 58.0,
+      "min": 25.0,
+      "max": 106.0
+    },
+    "MAP": {
+      "mean": 100.5075,
+      "std": 10.067175257288673,
+      "median": 100.33333333333333,
+      "min": 70.33333333333333,
+      "max": 132.0
+    }
+  },
+  "optimal_threshold": 0.39,
+  "risk_thresholds": {
+    "low_max": 0.35,
+    "med_max": 0.65
+  },
+  "n_trees": 154,
+  "created_at": "2026-05-05T17:47:14.762594"
+}

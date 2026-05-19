@@ -1,0 +1,27 @@
+{
+  "expo": {
+    "name": "CardioGuard",
+    "slug": "cardioguard",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "backgroundColor": "#f5f1ea",
+      "resizeMode": "contain"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.saintwhite.cardioguard"
+    },
+    "android": {
+      "package": "com.saintwhite.cardioguard",
+      "adaptiveIcon": {
+        "backgroundColor": "#d4f04a"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}
