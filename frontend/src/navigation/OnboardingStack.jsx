@@ -1,10 +1,13 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import SplashScreen from '../screens/onboarding/SplashScreen';
+import SignUpScreen from '../screens/auth/SignUpScreen';
 import PersonalInfoScreen from '../screens/onboarding/PersonalInfoScreen';
 import HealthInfoScreen from '../screens/onboarding/HealthInfoScreen';
 import MeasureBPScreen from '../screens/onboarding/MeasureBPScreen';
 import ConnectDeviceScreen from '../screens/onboarding/ConnectDeviceScreen';
+import SignInScreen from '../screens/auth/SignInScreen';
+import ForgotPasswordScreen from '../screens/auth/ForgotPasswordScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -17,10 +20,13 @@ export default function OnboardingStack() {
       }}
     >
       <Stack.Screen name="Splash" component={SplashScreen} />
+      <Stack.Screen name="SignUp" component={SignUpScreen} />
+      <Stack.Screen name="SignIn" component={SignInScreen} />
       <Stack.Screen name="PersonalInfo" component={PersonalInfoScreen} />
       <Stack.Screen name="HealthInfo" component={HealthInfoScreen} />
       <Stack.Screen name="MeasureBP" component={MeasureBPScreen} />
       <Stack.Screen name="ConnectDevice" component={ConnectDeviceScreen} />
+      <Stack.Screen name='ForgotPassword' component={ForgotPasswordScreen} />
     </Stack.Navigator>
   );
 }

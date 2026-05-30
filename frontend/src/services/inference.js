@@ -8,11 +8,7 @@ let _baseScore = 0;
 let _featureColumns = [];
 let _ready = false;
 
-/**
- * Initialise le moteur. Appelée automatiquement à la première prédiction,
- * mais préférable à appeler au démarrage de l'app pour éviter le coût
- * lors du premier appel.
- */
+
 export const initInference = () => {
   if (_ready) return;
 

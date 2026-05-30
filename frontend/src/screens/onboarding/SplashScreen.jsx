@@ -58,7 +58,7 @@ export default function SplashScreen({ navigation }) {
               title="Get Started"
               variant="accent"
               iconRight="arrow-forward"
-              onPress={() => navigation.navigate('PersonalInfo')}
+              onPress={() => navigation.navigate('SignUp')}
             />
           </View>
 

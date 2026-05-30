@@ -14,7 +14,13 @@ ALGORITHM    = os.getenv("ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES  = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 60))
 REFRESH_TOKEN_EXPIRE_DAYS    = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", 30))
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto", bcrypt__rounds=12)
+"""
+Use pbkdf2_sha256 for development to avoid native bcrypt dependency issues
+(bcrypt can cause installation/runtime problems on some platforms). For
+production you can switch back to bcrypt by installing the `bcrypt` wheel
+and restoring the `schemes` value.
+"""
+pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto", pbkdf2_sha256__rounds=29000)
 
 def hash_password(password: str) -> str:
     return pwd_context.hash(password)

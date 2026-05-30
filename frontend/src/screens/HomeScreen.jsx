@@ -12,6 +12,8 @@ import AlertCard from '../components/AlertCard';
 
 import { startStream, stopStream } from '../services/wearable';
 import { predictRisk } from '../services/api';
+import { syncHistory } from '../services/historyService';
+import { getProfile as fetchProfileFromServer } from '../services/profileService';
 import { COLORS, STORAGE, isNormal, getRiskLevel } from '../constants/theme';
 
 const BUFFER_SIZE = 30;          // points held in the chart
@@ -30,9 +32,34 @@ export default function HomeScreen({ navigation }) {
 
   // Load profile once at mount
   useEffect(() => {
-    AsyncStorage.getItem(STORAGE.PROFILE).then((raw) => {
+    (async () => {
+      // Prefer server profile when available
+      try {
+        const server = await fetchProfileFromServer();
+        if (server && Object.keys(server).length > 0) {
+          const mapped = {
+            age: server.age,
+            sex: server.gender,
+            height: server.height,
+            weight: server.weight,
+            bmi: server.bmi,
+            smoking: server.smoking,
+            alcohol: server.alcohol,
+            family_history: server.family_history,
+            systolic_bp: server.systolic_bp,
+            diastolic_bp: server.diastolic_bp,
+          };
+          await AsyncStorage.setItem(STORAGE.PROFILE, JSON.stringify(mapped));
+          setProfile(mapped);
+          return;
+        }
+      } catch (e) {
+        // ignore — fallback to local
+      }
+
+      const raw = await AsyncStorage.getItem(STORAGE.PROFILE);
       if (raw) setProfile(JSON.parse(raw));
-    });
+    })();
   }, []);
 
   // Start/stop the wearable stream based on screen focus
@@ -80,6 +107,7 @@ export default function HomeScreen({ navigation }) {
 
       // Append to history once per prediction
       const entry = {
+        id: `${Date.now()}-${Math.random().toString(36).slice(2,8)}`,
         timestamp: Date.now(),
         result,
         snapshot: { hr, spo2, sys: prof.systolic_bp, dia: prof.diastolic_bp },
@@ -89,6 +117,20 @@ export default function HomeScreen({ navigation }) {
       history.unshift(entry);
       await AsyncStorage.setItem(STORAGE.HISTORY, JSON.stringify(history.slice(0, 100)));
       await AsyncStorage.setItem(STORAGE.LATEST_RISK, JSON.stringify(result));
+      // Try to sync this single entry to the server (non-blocking)
+      try {
+        await syncHistory([
+          {
+            id: entry.id,
+            timestamp: entry.timestamp,
+            probability: result.probability,
+            cvd_detected: result.cvd_detected,
+            snapshot: entry.snapshot,
+          },
+        ]);
+      } catch (e) {
+        // ignore sync failures
+      }
     } catch (e) {
       // silent — don't disrupt the UI on transient errors
     }

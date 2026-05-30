@@ -11,12 +11,14 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getProfile as fetchProfileFromServer } from '../services/profileService';
 import { Ionicons } from '@expo/vector-icons';
 
 import Input from '../components/Input';
 import PrimaryButton from '../components/PrimaryButton';
 import { computeBMI } from '../services/api';
 import { COLORS, STORAGE, isNormal } from '../constants/theme';
+import { updateProfile } from '../services/profileService';
 import { useApp } from '../constants/AppContext';
 
 export default function ProfileScreen({ navigation }) {
@@ -26,6 +28,32 @@ export default function ProfileScreen({ navigation }) {
   const [draft, setDraft]     = useState({});
 
   const loadProfile = useCallback(async () => {
+    // Try to load authoritative profile from server first
+    try {
+      const server = await fetchProfileFromServer();
+      if (server && Object.keys(server).length > 0) {
+        const mapped = {
+          name: server.full_name,
+          age: server.age,
+          sex: server.gender,
+          height: server.height,
+          weight: server.weight,
+          bmi: server.bmi,
+          smoking: server.smoking,
+          alcohol: server.alcohol,
+          family_history: server.family_history,
+          systolic_bp: server.systolic_bp,
+          diastolic_bp: server.diastolic_bp,
+        };
+        await AsyncStorage.setItem(STORAGE.PROFILE, JSON.stringify(mapped));
+        setProfile(mapped);
+        setDraft(mapped);
+        return;
+      }
+    } catch (e) {
+      // fallback to local if unauthenticated/offline
+    }
+
     const raw = await AsyncStorage.getItem(STORAGE.PROFILE);
     if (raw) {
       const p = JSON.parse(raw);
@@ -45,13 +73,34 @@ export default function ProfileScreen({ navigation }) {
       ...draft,
       bmi: computeBMI(draft.height, draft.weight),
     };
-    await AsyncStorage.setItem(STORAGE.PROFILE, JSON.stringify(updated));
-    setProfile(updated);
-    setEditing(false);
-    Alert.alert('Saved', 'Your profile has been updated.');
+    try {
+      await updateProfile(updated);
+      await AsyncStorage.setItem(STORAGE.PROFILE, JSON.stringify(updated));
+      setProfile(updated);
+      setEditing(false);
+      Alert.alert('Saved', 'Your profile has been updated.');
+    } catch (e) {
+      // Save locally if backend/update fails
+      await AsyncStorage.setItem(STORAGE.PROFILE, JSON.stringify(updated));
+      setProfile(updated);
+      setEditing(false);
+      Alert.alert('Saved locally', 'Profile saved locally (offline).');
+    }
   };
 
   const handleLogout = () => {
+    // On web Alert.alert may not behave the same as native — use window.confirm there.
+    if (Platform.OS === 'web') {
+      const ok = window.confirm('Log out? This will clear all your data and return to the welcome screen.');
+      if (ok) {
+        // helpful debug log if logout doesn't run in browser
+        // eslint-disable-next-line no-console
+        console.log('ProfileScreen: logging out (web)');
+        resetApp();
+      }
+      return;
+    }
+
     Alert.alert(
       'Log out',
       'This will clear all your data and return to the welcome screen.',
@@ -60,7 +109,11 @@ export default function ProfileScreen({ navigation }) {
         {
           text: 'Log out',
           style: 'destructive',
-          onPress: resetApp,
+          onPress: () => {
+            // eslint-disable-next-line no-console
+            console.log('ProfileScreen: logging out (native)');
+            resetApp();
+          },
         },
       ]
     );

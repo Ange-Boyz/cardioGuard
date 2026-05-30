@@ -1,6 +1,8 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { STORAGE } from './theme';
+import { getMe } from '../services/profileService';
+import { startAutoSync } from '../services/syncService';
 
 const AppContext = createContext(null);
 
@@ -11,9 +13,31 @@ export function AppProvider({ children }) {
   useEffect(() => {
     (async () => {
       const flag = await AsyncStorage.getItem(STORAGE.ONBOARDED);
-      const prof = await AsyncStorage.getItem(STORAGE.PROFILE);
       setOnboarded(flag === 'true');
-      if (prof) setProfile(JSON.parse(prof));
+
+      // Load local profile first
+      const prof = await AsyncStorage.getItem(STORAGE.PROFILE);
+      let parsed = prof ? JSON.parse(prof) : null;
+
+      // If we have an access token, try to fetch user's name from server and merge
+      try {
+        const me = await getMe();
+        if (me && me.full_name) {
+          parsed = { ...(parsed || {}), name: me.full_name, email: me.email };
+          // persist merged profile locally
+          await AsyncStorage.setItem(STORAGE.PROFILE, JSON.stringify(parsed));
+        }
+      } catch (e) {
+        // no token or network — ignore
+      }
+
+      if (parsed) setProfile(parsed);
+      // start background sync (fires when connectivity is restored)
+      try {
+        startAutoSync();
+      } catch (e) {
+        // ignore
+      }
     })();
   }, []);
 

@@ -12,10 +12,12 @@ import Input from '../../components/Input';
 import PrimaryButton from '../../components/PrimaryButton';
 import OnboardingHeader from '../../components/OnboardingHeader';
 import { computeBMI } from '../../services/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { STORAGE } from '../../constants/theme';
+import { updateProfile } from '../../services/profileService';
 import { COLORS, isNormal } from '../../constants/theme';
 
 export default function PersonalInfoScreen({ navigation, route }) {
-  const [name, setName]     = useState('');
   const [age, setAge]       = useState('');
   const [sex, setSex]       = useState('Male');
   const [height, setHeight] = useState('');
@@ -27,7 +29,6 @@ export default function PersonalInfoScreen({ navigation, route }) {
 
   const handleNext = () => {
     const e = {};
-    if (!name.trim()) e.name = 'Please enter your name';
     if (!age || Number(age) < 1 || Number(age) > 120) e.age = 'Age must be 1–120';
     if (!height || Number(height) < 50 || Number(height) > 250) e.height = 'Height in cm (50–250)';
     if (!weight || Number(weight) < 20 || Number(weight) > 300) e.weight = 'Weight in kg (20–300)';
@@ -37,16 +38,26 @@ export default function PersonalInfoScreen({ navigation, route }) {
       return;
     }
 
-    navigation.navigate('HealthInfo', {
-      profile: {
-        name: name.trim(),
-        age: Number(age),
-        sex,
-        height: Number(height),
-        weight: Number(weight),
-        bmi,
-      },
-    });
+    const profile = {
+      age: Number(age),
+      gender: sex,
+      height: Number(height),
+      weight: Number(weight),
+      bmi,
+    };
+
+    (async () => {
+      try {
+        // try to persist to backend; fall back to local storage
+        await updateProfile(profile);
+        await AsyncStorage.setItem(STORAGE.PROFILE, JSON.stringify(profile));
+      } catch (e) {
+        // couldn't send to backend (no token or network) — save locally
+        await AsyncStorage.setItem(STORAGE.PROFILE, JSON.stringify(profile));
+      } finally {
+        navigation.navigate('HealthInfo', { profile });
+      }
+    })();
   };
 
   return (
@@ -68,14 +79,6 @@ export default function PersonalInfoScreen({ navigation, route }) {
           <Text className="text-base text-ink-muted mt-2 mb-8">
             We'll use this to personalize your risk assessment.
           </Text>
-
-          <Input
-            label="Your name"
-            value={name}
-            onChange={setName}
-            placeholder="e.g. Saint"
-            error={errors.name}
-          />
 
           <Input
             label="Age"

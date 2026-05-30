@@ -7,6 +7,9 @@ import Input from '../../components/Input';
 import PrimaryButton from '../../components/PrimaryButton';
 import OnboardingHeader from '../../components/OnboardingHeader';
 import { COLORS } from '../../constants/theme';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { STORAGE } from '../../constants/theme';
+import { updateProfile } from '../../services/profileService';
 
 export default function HealthInfoScreen({ navigation, route }) {
   const { profile } = route.params;
@@ -16,14 +19,23 @@ export default function HealthInfoScreen({ navigation, route }) {
   const [alcohol, setAlcohol]             = useState('No');
 
   const handleNext = () => {
-    navigation.navigate('MeasureBP', {
-      profile: {
-        ...profile,
-        family_history: familyHistory,
-        smoking,
-        alcohol,
-      },
-    });
+    const updated = {
+      ...profile,
+      family_history: familyHistory,
+      smoking,
+      alcohol,
+    };
+
+    (async () => {
+      try {
+        await updateProfile(updated);
+      } catch (e) {
+        // ignore network/auth errors — persist locally
+      } finally {
+        await AsyncStorage.setItem(STORAGE.PROFILE, JSON.stringify(updated));
+        navigation.navigate('MeasureBP', { profile: updated });
+      }
+    })();
   };
 
   return (

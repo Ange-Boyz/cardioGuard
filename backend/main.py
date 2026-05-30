@@ -276,14 +276,18 @@ def sync_history(
     received   = 0
     duplicates = 0
 
+    # Track seen client_ids to avoid inserting duplicates present in the payload
+    seen_ids = set(existing_ids)
+
     for entry in body.entries:
-        if entry.id in existing_ids:
+        client_id = entry.id
+        if client_id in seen_ids:
             duplicates += 1
             continue
 
         he = HistoryEntry(
             user_id      = current_user.id,
-            client_id    = entry.id,
+            client_id    = client_id,
             timestamp    = datetime.utcfromtimestamp(entry.timestamp / 1000),
             probability  = entry.probability,
             cvd_detected = entry.cvd_detected,
@@ -291,6 +295,7 @@ def sync_history(
         )
         db.add(he)
         received += 1
+        seen_ids.add(client_id)
 
     db.commit()
 

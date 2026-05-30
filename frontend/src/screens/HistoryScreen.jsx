@@ -19,6 +19,23 @@ export default function HistoryScreen() {
   const [range, setRange]       = useState('week');
 
   const loadHistory = useCallback(async () => {
+    // Try fetching server history first (if authenticated), otherwise fallback to local
+    try {
+      const server = await (await import('../services/historyService')).fetchHistory();
+      if (server && server.entries) {
+        const mapped = server.entries.map((e) => ({
+          timestamp: new Date(e.timestamp).getTime(),
+          result: { probability: e.probability, cvd_detected: e.cvd_detected },
+          snapshot: e.snapshot,
+        }));
+        setHistory(mapped);
+        await AsyncStorage.setItem(STORAGE.HISTORY, JSON.stringify(mapped));
+        return;
+      }
+    } catch (e) {
+      // ignore and fall back to local history
+    }
+
     const raw = await AsyncStorage.getItem(STORAGE.HISTORY);
     setHistory(raw ? JSON.parse(raw) : []);
   }, []);

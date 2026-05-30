@@ -12,7 +12,9 @@ import { Ionicons } from '@expo/vector-icons';
 import Input from '../../components/Input';
 import PrimaryButton from '../../components/PrimaryButton';
 import OnboardingHeader from '../../components/OnboardingHeader';
-import { COLORS, isNormal } from '../../constants/theme';
+import { COLORS, isNormal, STORAGE } from '../../constants/theme';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { updateProfile } from '../../services/profileService';
 
 export default function MeasureBPScreen({ navigation, route }) {
   const { profile } = route.params;
@@ -37,13 +39,22 @@ export default function MeasureBPScreen({ navigation, route }) {
       setErrors(e);
       return;
     }
-    navigation.navigate('ConnectDevice', {
-      profile: {
-        ...profile,
-        systolic_bp: Number(systolic),
-        diastolic_bp: Number(diastolic),
-      },
-    });
+    const updated = {
+      ...profile,
+      systolic_bp: Number(systolic),
+      diastolic_bp: Number(diastolic),
+    };
+
+    (async () => {
+      try {
+        await updateProfile(updated);
+      } catch (e) {
+        // ignore
+      } finally {
+        await AsyncStorage.setItem(STORAGE.PROFILE, JSON.stringify(updated));
+        navigation.navigate('ConnectDevice', { profile: updated });
+      }
+    })();
   };
 
   return (
