@@ -5,28 +5,13 @@
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_BASE } from '../config';
 
 // Determine API host in this order:
 // 1. Expo debugger host (gives your PC LAN IP when using LAN in Expo)
 // 2. Android emulator loopback (10.0.2.2)
 // 3. localhost
-function resolveApiHost() {
-  try {
-    const dbg = Constants?.manifest?.debuggerHost;
-    if (dbg) {
-      const host = dbg.split(':')[0];
-      if (host && host !== 'localhost' && host !== '127.0.0.1') return host;
-    }
-  } catch (e) {
-    // ignore
-  }
-
-  if (Platform.OS === 'android') return '10.0.2.2';
-  return 'localhost';
-}
-
-const API_HOST = resolveApiHost();
-const API_BASE = `http://${API_HOST}:8000`;
+// `API_BASE` is exported from src/config.js
 
 async function handleResponse(res) {
   if (!res.ok) {

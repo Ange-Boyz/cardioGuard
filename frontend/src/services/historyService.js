@@ -2,20 +2,7 @@ import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { refreshTokens } from './authService';
-
-function resolveApiHost() {
-  try {
-    const dbg = Constants?.manifest?.debuggerHost;
-    if (dbg) {
-      const host = dbg.split(':')[0];
-      if (host && host !== 'localhost' && host !== '127.0.0.1') return host;
-    }
-  } catch (e) {}
-  if (Platform.OS === 'android') return '10.0.2.2';
-  return 'localhost';
-}
-
-const API_BASE = `http://${resolveApiHost()}:8000`;
+import { API_BASE } from '../config';
 
 export async function syncHistory(entries) {
   const token = await AsyncStorage.getItem('@cg_access_token');
