@@ -21,7 +21,5 @@ function resolveApiHost() {
 }
 
 const API_BASE = (process.env && process.env.API_BASE_URL)
-  ? process.env.API_BASE_URL
-  : `http://${resolveApiHost()}:8000`;
 
 export { API_BASE };
