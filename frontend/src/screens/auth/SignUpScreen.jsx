@@ -22,12 +22,14 @@ export default function SignUpScreen({ navigation }) {
   const [lastName,  setLastName]  = useState('');
   const [email,     setEmail]     = useState('');
   const [password,  setPassword]  = useState('');
+  const [passwordConfirm, setPasswordConfirm] = useState('');
   const [loading,   setLoading]   = useState(false);
   const [toast,     setToast]     = useState({ visible: false, message: '', type: 'info' });
 
   const lastNameRef  = useRef(null);
   const emailRef     = useRef(null);
   const passwordRef  = useRef(null);
+  const passwordConfirmRef = useRef(null);
 
   // ── Entrance animation ────────────────────────────────────────────────────
   const fadeAnim  = useRef(new Animated.Value(0)).current;
@@ -56,6 +58,8 @@ export default function SignUpScreen({ navigation }) {
     if (!email.includes('@'))   { showToast('Enter a valid email address.', 'error');    return false; }
     if (!password)              { showToast('Password is required.', 'error');           return false; }
     if (password.length < 8)    { showToast('Password must be at least 8 characters.', 'error'); return false; }
+    if (!passwordConfirm)       { showToast('Please confirm your password.', 'error');    return false; }
+    if (password !== passwordConfirm) { showToast('Passwords do not match.', 'error');       return false; }
     return true;
   };
 
@@ -196,9 +200,22 @@ export default function SignUpScreen({ navigation }) {
               secureTextEntry
               autoComplete="new-password"
               inputRef={passwordRef}
+              returnKeyType="next"
+              onSubmitEditing={() => passwordConfirmRef.current?.focus()}
+              showStrength
+            />
+
+            <Field
+              label="Confirm password"
+              icon="lock-closed-outline"
+              placeholder="Re-enter password"
+              value={passwordConfirm}
+              onChangeText={setPasswordConfirm}
+              secureTextEntry
+              autoComplete="new-password"
+              inputRef={passwordConfirmRef}
               returnKeyType="done"
               onSubmitEditing={handleSignUp}
-              showStrength
             />
 
             <PrimaryButton

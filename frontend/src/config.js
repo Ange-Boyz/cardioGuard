@@ -12,14 +12,20 @@ function resolveApiHost() {
     const dbg = Constants?.manifest?.debuggerHost;
     if (dbg) {
       const host = dbg.split(':')[0];
-      if (host && host !== 'localhost' && host !== '127.0.0.1') return host;
+      if (host && host !== 'localhost' && host !== '10.121.131.192') return host;
     }
   } catch (e) {}
 
   if (Platform.OS === 'android') return '10.0.2.2';
-  return 'localhost';
+  return '10.121.131.192';
 }
 
-const API_BASE = (process.env && process.env.API_BASE_URL)
+const API_BASE = (
+  typeof process !== 'undefined' &&
+  process.env &&
+  process.env.API_BASE_URL
+)
+  ? process.env.API_BASE_URL
+  : `http://${resolveApiHost()}:8000`;
 
 export { API_BASE };

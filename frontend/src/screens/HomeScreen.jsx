@@ -38,6 +38,7 @@ export default function HomeScreen({ navigation }) {
         const server = await fetchProfileFromServer();
         if (server && Object.keys(server).length > 0) {
           const mapped = {
+            name: server.full_name,
             age: server.age,
             sex: server.gender,
             height: server.height,

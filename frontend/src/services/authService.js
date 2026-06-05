@@ -14,11 +14,30 @@ import { API_BASE } from '../config';
 // `API_BASE` is exported from src/config.js
 
 async function handleResponse(res) {
+  const contentType = (res.headers && res.headers.get)
+    ? (res.headers.get('content-type') || '')
+    : '';
+  const isJson = contentType.includes('application/json');
+
   if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw err;
+    if (isJson) {
+      const err = await res.json().catch(() => ({}));
+      throw err;
+    }
+    const text = await res.text().catch(() => 'Server error');
+    throw { message: text };
   }
-  return res.json();
+
+  if (!isJson) {
+    const text = await res.text().catch(() => 'Invalid server response');
+    try {
+      return JSON.parse(text);
+    } catch (e) {
+      throw { message: text };
+    }
+  }
+
+  return await res.json();
 }
 
 export async function signUp(payload) {
@@ -59,12 +78,7 @@ export async function refreshTokens() {
       body: JSON.stringify({ refresh_token: refresh }),
     });
 
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw err;
-    }
-
-    const payload = await res.json();
+    const payload = await handleResponse(res);
     // persist new tokens
     await AsyncStorage.setItem('@cg_access_token', payload.access_token);
     await AsyncStorage.setItem('@cg_refresh_token', payload.refresh_token);

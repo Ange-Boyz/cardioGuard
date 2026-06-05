@@ -12,6 +12,7 @@ import { COLORS } from '../constants/theme';
  */
 export default function PrimaryButton({
   title,
+  label,
   onPress,
   variant = 'filled',
   loading = false,
@@ -46,7 +47,7 @@ export default function PrimaryButton({
           {icon ? (
             <Ionicons name={icon} size={20} color={textColor} style={{ marginRight: 8 }} />
           ) : null}
-          <Text className={`font-bold text-base ${styles.text}`}>{title}</Text>
+          <Text className={`font-bold text-base ${styles.text}`}>{title ?? label}</Text>
           {iconRight ? (
             <Ionicons name={iconRight} size={20} color={textColor} style={{ marginLeft: 8 }} />
           ) : null}
